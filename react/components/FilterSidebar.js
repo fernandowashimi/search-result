@@ -6,6 +6,8 @@ import { ExtensionPoint } from 'vtex.render-runtime'
 import { Button } from 'vtex.styleguide'
 import { IconFilter } from 'vtex.store-icons'
 import { useCssHandles } from 'vtex.css-handles'
+import { useSearchPage } from 'vtex.search-page-context/SearchPageContext'
+import { path } from 'ramda'
 
 import FilterNavigatorContext, {
   useFilterNavigator,
@@ -29,6 +31,7 @@ const CSS_HANDLES = [
   'filterPopupArrowIcon',
   'filterClearButtonWrapper',
   'filterApplyButtonWrapper',
+  'filterTotalProducts',
 ]
 
 const FilterSidebar = ({
@@ -39,10 +42,15 @@ const FilterSidebar = ({
   preventRouteChange,
   navigateToFacet,
 }) => {
+  const { searchQuery } = useSearchPage()
   const filterContext = useFilterNavigator()
   const [open, setOpen] = useState(false)
   const handles = useCssHandles(CSS_HANDLES)
   const shouldClear = useRef(false)
+  const recordsFiltered = path(
+    ['data', 'productSearch', 'recordsFiltered'],
+    searchQuery
+  )
 
   const [filterOperations, setFilterOperations] = useState([])
   const [categoryTreeOperations, setCategoryTreeOperations] = useState([])
@@ -174,31 +182,45 @@ const FilterSidebar = ({
           <ExtensionPoint id="sidebar-close-button" onClose={handleClose} />
         </FilterNavigatorContext.Provider>
         <div
-          className={`${styles.filterButtonsBox} bt b--muted-5 bottom-0 fixed w-100 items-center flex z-1 bg-base`}
+          className={`${styles.filterButtonsBox} bt b--muted-5 bottom-0 fixed w-100 items-center justify-around flex flex-column z-1 bg-base`}
         >
-          <div
-            className={`${handles.filterClearButtonWrapper} bottom-0 fl w-50 pl4 pr2`}
-          >
-            <Button
-              block
-              variation="tertiary"
-              size="regular"
-              onClick={handleClearFilters}
+          <div className="w-100 flex flex-grow-1 items-center">
+            <div
+              className={`${handles.filterClearButtonWrapper} bottom-0 fl w-50 pl4 pr2`}
             >
-              <FormattedMessage id="store/search-result.filter-button.clear" />
-            </Button>
+              <Button
+                block
+                variation="tertiary"
+                size="regular"
+                onClick={handleClearFilters}
+              >
+                <FormattedMessage id="store/search-result.filter-button.clear" />
+              </Button>
+            </div>
+            <div
+              className={`${handles.filterApplyButtonWrapper} bottom-0 fr w-50 pr4 pl2`}
+            >
+              <Button
+                block
+                variation="secondary"
+                size="regular"
+                onClick={handleApply}
+              >
+                <FormattedMessage id="store/search-result.filter-button.apply" />
+              </Button>
+            </div>
           </div>
           <div
-            className={`${handles.filterApplyButtonWrapper} bottom-0 fr w-50 pr4 pl2`}
+            className={`${handles.filterTotalProducts} w-100 flex flex-grow-1 items-center justify-center pre t-action--small`}
           >
-            <Button
-              block
-              variation="secondary"
-              size="regular"
-              onClick={handleApply}
-            >
-              <FormattedMessage id="store/search-result.filter-button.apply" />
-            </Button>
+            <FormattedMessage
+              id="store/search.total-products-2"
+              values={{
+                recordsFiltered,
+                // eslint-disable-next-line react/display-name
+                span: chunks => <span>{chunks}</span>,
+              }}
+            />
           </div>
         </div>
       </Sidebar>
