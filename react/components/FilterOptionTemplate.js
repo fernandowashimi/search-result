@@ -1,11 +1,12 @@
 import PropTypes from 'prop-types'
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useContext } from 'react'
 import { Collapse } from 'react-collapse'
 import classNames from 'classnames'
 
 import { IconCaret } from 'vtex.store-icons'
 import { useCssHandles } from 'vtex.css-handles'
 
+import SettingsContext from './SettingsContext'
 import styles from '../searchResult.css'
 
 const CSS_HANDLES = [
@@ -17,6 +18,7 @@ const CSS_HANDLES = [
   'filterIcon',
   'filterContent',
   'filterTemplateOverflow',
+  'filterSelectedFilters',
 ]
 /**
  * Collapsable filters container
@@ -30,6 +32,7 @@ const FilterOptionTemplate = ({
   filters,
   initiallyCollapsed = false,
 }) => {
+  const { showAppliedFiltersOverview } = useContext(SettingsContext)
   const [open, setOpen] = useState(!initiallyCollapsed)
   const handles = useCssHandles(CSS_HANDLES)
 
@@ -95,6 +98,19 @@ const FilterOptionTemplate = ({
             )}
           </div>
         </div>
+        {showAppliedFiltersOverview && filters && !selected && (
+          <div
+            className={classNames(
+              handles.filterSelectedFilters,
+              'f6 c-action-primary'
+            )}
+          >
+            {filters
+              .filter(facet => facet.selected)
+              .map(facet => facet.name)
+              .join(', ')}
+          </div>
+        )}
       </div>
       <div
         className={classNames(handles.filterTemplateOverflow, {

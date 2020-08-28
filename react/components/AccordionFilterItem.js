@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { intlShape, injectIntl } from 'react-intl'
 import classNames from 'classnames'
@@ -6,6 +6,7 @@ import { Tag } from 'vtex.styleguide'
 import { useCssHandles } from 'vtex.css-handles'
 import { IconCaret } from 'vtex.store-icons'
 
+import SettingsContext from './SettingsContext'
 import { getFilterTitle } from '../constants/SearchHelpers'
 
 const CSS_HANDLES = [
@@ -18,6 +19,7 @@ const CSS_HANDLES = [
   'accordionFilterItemTitle',
   'accordionFilterItemTag',
   'accordionFilterItemIcon',
+  'accordionSelectedFilters',
 ]
 
 const AccordionFilterItem = ({
@@ -25,16 +27,18 @@ const AccordionFilterItem = ({
   show,
   open,
   onOpen,
-  quantitySelected = 0,
+  selectedFilters = [],
   intl,
   children,
 }) => {
+  const { showAppliedFiltersOverview } = useContext(SettingsContext)
   const handles = useCssHandles(CSS_HANDLES)
   const handleKeyDown = e => {
     if (e.key === ' ') {
       onOpen(e)
     }
   }
+  const quantitySelected = selectedFilters.length
 
   return (
     <Fragment>
@@ -57,7 +61,8 @@ const AccordionFilterItem = ({
           >
             <div
               className={classNames(
-                handles.accordionFilterContent, 'pv4 c-on-base',
+                handles.accordionFilterContent,
+                'pv4 c-on-base',
                 {
                   't-small': open,
                   't-heading-5': !open,
@@ -80,6 +85,16 @@ const AccordionFilterItem = ({
               <span className={`${handles.accordionFilterItemIcon} fr`}>
                 <IconCaret orientation="down" size={10} />
               </span>
+              {showAppliedFiltersOverview && quantitySelected > 0 && (
+                <div
+                  className={classNames(
+                    handles.accordionSelectedFilters,
+                    'f6 c-action-primary'
+                  )}
+                >
+                  {selectedFilters.map(facet => facet.name).join(', ')}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -98,8 +113,8 @@ AccordionFilterItem.propTypes = {
   open: PropTypes.bool,
   /** Callback to open event */
   onOpen: PropTypes.func,
-  /** Quantity of selected filters */
-  quantitySelected: PropTypes.number,
+  /** List of selected filters */
+  selectedFilters: PropTypes.arrayOf(PropTypes.object),
   /** Intl instance */
   intl: intlShape,
   /** content */
